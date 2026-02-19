@@ -1,4 +1,4 @@
-import { Client } from "minio";
+import { getMinioClient, getMinioBucket } from "./minio-client.js";
 
 export interface FragmentEntry {
   hash: string;
@@ -9,39 +9,6 @@ export interface Manifest {
   version: 1;
   updatedAt: string;
   fragments: Record<string, FragmentEntry>;
-}
-
-let minioClient: Client | null = null;
-
-function getClient(): Client | null {
-  if (minioClient) return minioClient;
-
-  const endpoint = process.env.MINIO_ENDPOINT || process.env.S3_ENDPOINT;
-  const accessKey =
-    process.env.MINIO_ACCESS_KEY || process.env.S3_ACCESS_KEY;
-  const secretKey =
-    process.env.MINIO_SECRET_KEY || process.env.S3_SECRET_KEY;
-
-  if (!endpoint || !accessKey || !secretKey) return null;
-
-  try {
-    const url = new URL(endpoint);
-    minioClient = new Client({
-      endPoint: url.hostname,
-      port: url.port ? Number(url.port) : url.protocol === "https:" ? 443 : 9000,
-      useSSL: url.protocol === "https:",
-      accessKey,
-      secretKey,
-    });
-    return minioClient;
-  } catch {
-    console.error("Failed to initialize MinIO client for manifest");
-    return null;
-  }
-}
-
-function getBucket(): string {
-  return process.env.MINIO_BUCKET_PREFIX || "merfy-sites";
 }
 
 function manifestPath(siteId: string): string {
@@ -57,10 +24,10 @@ function defaultManifest(): Manifest {
 }
 
 export async function readManifest(siteId: string): Promise<Manifest> {
-  const client = getClient();
+  const client = getMinioClient();
   if (!client) return defaultManifest();
 
-  const bucket = getBucket();
+  const bucket = getMinioBucket();
   const path = manifestPath(siteId);
 
   try {
@@ -81,7 +48,7 @@ export async function updateManifest(
   component: string,
   hash: string,
 ): Promise<Manifest> {
-  const client = getClient();
+  const client = getMinioClient();
   if (!client) {
     throw new Error("MinIO client not available");
   }
@@ -94,7 +61,7 @@ export async function updateManifest(
   };
   manifest.updatedAt = new Date().toISOString();
 
-  const bucket = getBucket();
+  const bucket = getMinioBucket();
   const path = manifestPath(siteId);
   const buffer = Buffer.from(JSON.stringify(manifest, null, 2), "utf-8");
 

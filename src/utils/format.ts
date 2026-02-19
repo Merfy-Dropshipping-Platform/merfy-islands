@@ -2,7 +2,8 @@ const priceFormatter = new Intl.NumberFormat("ru-RU", {
   maximumFractionDigits: 0,
 });
 
-export function formatPrice(value: number): string {
+export function formatPrice(value: number | undefined | null): string {
+  if (value == null) return "0 ₽";
   return priceFormatter.format(value) + " ₽";
 }
 

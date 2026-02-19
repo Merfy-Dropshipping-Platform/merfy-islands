@@ -10,6 +10,14 @@ import { StoreAPI } from "./services/store-api.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(__dirname, "..", "public");
 
+// Cache islands.js content at startup
+let islandsJsCache: string | null = null;
+try {
+  islandsJsCache = readFileSync(join(publicDir, "islands.js"), "utf-8");
+} catch {
+  console.warn("public/islands.js not found — GET /islands.js will return 404");
+}
+
 const app = new Hono();
 
 app.use(
@@ -29,14 +37,12 @@ app.get("/health", (c) => {
 });
 
 app.get("/islands.js", (c) => {
-  try {
-    const js = readFileSync(join(publicDir, "islands.js"), "utf-8");
-    c.header("Content-Type", "application/javascript; charset=utf-8");
-    c.header("Cache-Control", "public, max-age=3600");
-    return c.body(js);
-  } catch {
+  if (!islandsJsCache) {
     return c.text("// islands.js not found", 404);
   }
+  c.header("Content-Type", "application/javascript; charset=utf-8");
+  c.header("Cache-Control", "public, max-age=3600");
+  return c.body(islandsJsCache);
 });
 
 app.post("/islands/:component", async (c) => {
