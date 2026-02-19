@@ -1,8 +1,14 @@
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
 import { rendererRegistry } from "./renderers/registry.js";
 import { StoreAPI } from "./services/store-api.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const publicDir = join(__dirname, "..", "public");
 
 const app = new Hono();
 
@@ -20,6 +26,17 @@ app.use(
 
 app.get("/health", (c) => {
   return c.text("ok");
+});
+
+app.get("/islands.js", (c) => {
+  try {
+    const js = readFileSync(join(publicDir, "islands.js"), "utf-8");
+    c.header("Content-Type", "application/javascript; charset=utf-8");
+    c.header("Cache-Control", "public, max-age=3600");
+    return c.body(js);
+  } catch {
+    return c.text("// islands.js not found", 404);
+  }
 });
 
 app.post("/islands/:component", async (c) => {
