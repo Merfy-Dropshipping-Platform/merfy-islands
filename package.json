@@ -12,7 +12,7 @@
   "dependencies": {
     "@hono/node-server": "^1.13.0",
     "hono": "^4.7.0",
-    "minio": "^8.0.6"
+    "minio": "^8.0.7"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
