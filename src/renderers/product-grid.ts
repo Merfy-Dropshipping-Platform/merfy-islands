@@ -41,6 +41,7 @@ export async function renderProductGrid(
     : "";
 
   const cards = products
+    .filter(Boolean)
     .map((product) => {
       const name = escapeHtml(product.name);
       const image =

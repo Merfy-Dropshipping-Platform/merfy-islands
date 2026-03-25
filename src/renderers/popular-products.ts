@@ -97,7 +97,7 @@ export async function renderPopularProducts(
       </p>
     </div>
     <div class="grid grid-cols-1 ${cols} gap-4 sm:gap-5 md:gap-6 lg:gap-4 xl:gap-[16px]">
-      ${products.map(renderProductCard).join("\n")}
+      ${products.filter(Boolean).map(renderProductCard).join("\n")}
     </div>
   </div>
 </section>`;
