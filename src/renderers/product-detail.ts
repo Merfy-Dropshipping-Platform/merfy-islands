@@ -40,6 +40,29 @@ export async function renderProductDetail(
            <span class="text-gray-400">No image</span>
          </div>`;
 
+  const sku = product.sku;
+  const outOfStock = product.quantity === 0 && !product.hasVariants;
+
+  const skuHtml = sku
+    ? `<p class="text-xs sm:text-sm text-gray-400 leading-normal" style="font-family: 'Manrope', sans-serif;">
+        Артикул: ${escapeHtml(sku)}
+      </p>`
+    : "";
+
+  const outOfStockHtml = outOfStock
+    ? `<div class="inline-flex items-center px-4 py-2 bg-red-50 border border-red-200 rounded-lg">
+        <span class="text-sm sm:text-base font-medium text-red-600" style="font-family: 'Manrope', sans-serif;">Нет в наличии</span>
+      </div>`
+    : "";
+
+  const buttonHtml = outOfStock
+    ? `<button disabled class="w-full sm:w-auto px-8 py-3 sm:py-4 bg-gray-300 text-gray-500 rounded-lg text-base sm:text-lg font-medium cursor-not-allowed opacity-50" style="font-family: 'Manrope', sans-serif;">
+        Add to cart
+      </button>`
+    : `<button class="w-full sm:w-auto px-8 py-3 sm:py-4 bg-black text-white rounded-lg text-base sm:text-lg font-medium hover:bg-gray-800 transition-colors" style="font-family: 'Manrope', sans-serif;">
+        Add to cart
+      </button>`;
+
   return `
 <section class="bg-white w-full py-8 sm:py-12 md:py-16 lg:py-20">
   <div class="w-full max-w-[1920px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-[300px]">
@@ -55,6 +78,8 @@ export async function renderProductDetail(
           ${name}
         </h1>
 
+        ${skuHtml}
+
         <div class="flex items-center gap-3 sm:gap-4 lg:gap-[15px] flex-wrap">
           <span class="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-normal text-black leading-[1.366]" style="font-family: 'Manrope', sans-serif;">
             ${formatPrice(product.price)}
@@ -68,6 +93,8 @@ export async function renderProductDetail(
           }
         </div>
 
+        ${outOfStockHtml}
+
         ${
           description
             ? `<div class="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed" style="font-family: 'Manrope', sans-serif;">
@@ -76,9 +103,7 @@ export async function renderProductDetail(
             : ""
         }
 
-        <button class="w-full sm:w-auto px-8 py-3 sm:py-4 bg-black text-white rounded-lg text-base sm:text-lg font-medium hover:bg-gray-800 transition-colors" style="font-family: 'Manrope', sans-serif;">
-          Add to cart
-        </button>
+        ${buttonHtml}
       </div>
     </div>
   </div>

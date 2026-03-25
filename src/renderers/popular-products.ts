@@ -1,4 +1,4 @@
-import type { StoreAPI } from "../services/store-api.js";
+import type { Product, StoreAPI } from "../services/store-api.js";
 import { escapeHtml, formatPrice } from "../utils/format.js";
 
 export interface PopularProductsProps {
@@ -7,27 +7,44 @@ export interface PopularProductsProps {
   subtitle?: string;
 }
 
+function isOutOfStock(product: Pick<Product, "quantity" | "hasVariants">): boolean {
+  return product.quantity === 0 && !product.hasVariants;
+}
+
 function renderProductCard(product: {
   name: string;
   price: number;
   compareAtPrice?: number;
   images?: string[];
   slug?: string;
+  quantity?: number;
+  hasVariants?: boolean;
 }): string {
   const name = escapeHtml(product.name);
   const image =
     product.images?.[0] ? escapeHtml(product.images[0]) : "/images/placeholder.png";
   const href = product.slug ? `/products/${escapeHtml(product.slug)}` : "#";
+  const outOfStock = isOutOfStock({
+    quantity: product.quantity ?? 0,
+    hasVariants: product.hasVariants ?? false,
+  });
+
+  const outOfStockOverlay = outOfStock
+    ? `<div class="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg sm:rounded-[8px] md:rounded-[10px]">
+        <span class="text-white text-sm sm:text-base font-medium px-3 py-1.5 bg-black/60 rounded-md" style="font-family: 'Manrope', sans-serif;">Нет в наличии</span>
+      </div>`
+    : "";
 
   return `
     <a href="${href}" class="flex flex-col gap-4 sm:gap-5 md:gap-6 lg:gap-[25px] group cursor-pointer no-underline">
-      <div class="bg-gray-100 rounded-lg sm:rounded-[8px] md:rounded-[10px] overflow-hidden w-full aspect-[318/515]">
+      <div class="relative bg-gray-100 rounded-lg sm:rounded-[8px] md:rounded-[10px] overflow-hidden w-full aspect-[318/515]">
         <img
           src="${image}"
           alt="${name}"
           loading="lazy"
           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
+        ${outOfStockOverlay}
       </div>
       <div class="flex flex-col gap-2 sm:gap-2.5 md:gap-3 lg:gap-[10px] px-2 sm:px-3 md:px-4 lg:px-[15px]">
         <h3 class="text-base sm:text-lg md:text-xl lg:text-[24px] font-normal text-black leading-[1.366]" style="font-family: 'Manrope', sans-serif;">

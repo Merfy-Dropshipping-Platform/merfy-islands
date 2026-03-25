@@ -6,6 +6,13 @@ export interface Product {
   compareAtPrice?: number;
   images?: string[];
   slug?: string;
+  sku: string | null;
+  quantity: number;
+  hasVariants: boolean;
+  isPhysicalProduct: boolean;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  collections: Array<{ id: string; name: string }>;
   [key: string]: unknown;
 }
 
@@ -25,6 +32,13 @@ interface RawProduct {
   images?: string[];
   handle?: string;
   slug?: string;
+  sku?: string | null;
+  quantity?: number;
+  hasVariants?: boolean;
+  isPhysicalProduct?: boolean;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  collections?: Array<{ id: string; name: string }>;
   [key: string]: unknown;
 }
 
@@ -41,6 +55,13 @@ function mapProduct(raw: RawProduct): Product {
       : undefined,
     images: raw.images,
     slug: raw.handle || raw.slug || raw.id,
+    sku: raw.sku ?? null,
+    quantity: raw.quantity ?? 0,
+    hasVariants: raw.hasVariants ?? false,
+    isPhysicalProduct: raw.isPhysicalProduct ?? true,
+    metaTitle: raw.metaTitle ?? null,
+    metaDescription: raw.metaDescription ?? null,
+    collections: raw.collections ?? [],
   };
 }
 
