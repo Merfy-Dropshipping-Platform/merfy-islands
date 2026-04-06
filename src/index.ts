@@ -45,6 +45,47 @@ app.get("/islands.js", (c) => {
   return c.body(islandsJsCache);
 });
 
+app.post("/islands/batch", async (c) => {
+  try {
+    const body = (await c.req.json()) as Record<string, unknown>;
+    const { storeId, components } = body;
+
+    if (!storeId || typeof storeId !== "string") {
+      return c.json({ error: "storeId is required" }, 400);
+    }
+    if (!Array.isArray(components) || components.length === 0) {
+      return c.json({ error: "components array is required" }, 400);
+    }
+
+    const storeApiUrl = process.env.STORE_API_URL || "https://gateway.merfy.ru/api";
+    const api = new StoreAPI(storeApiUrl, storeId);
+
+    const results = await Promise.allSettled(
+      components.map(async (name: string) => {
+        const renderer = rendererRegistry[name];
+        if (!renderer) return null;
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout rendering ${name}`)), 10000),
+        );
+        return Promise.race([renderer({}, api), timeoutPromise]);
+      }),
+    );
+
+    const response: Record<string, string | null> = {};
+    components.forEach((name: string, i: number) => {
+      const result = results[i];
+      response[name] =
+        result.status === "fulfilled" ? result.value ?? null : null;
+    });
+
+    return c.json(response);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    console.error("Batch render error:", err);
+    return c.json({ error: message }, 500);
+  }
+});
+
 app.post("/islands/:component", async (c) => {
   const component = c.req.param("component");
 
