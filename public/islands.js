@@ -25,10 +25,10 @@ class MerfyIsland extends HTMLElement {
   }
 
   async _revalidate(component, buildHash) {
-    // Try to fetch manifest
+    // Try to fetch manifest (cache-bust to always get latest)
     let manifest = null;
     try {
-      const res = await fetch("/_islands/manifest.json");
+      const res = await fetch("/_islands/manifest.json?_=" + Date.now());
       if (res.ok) {
         manifest = await res.json();
       }
@@ -43,11 +43,11 @@ class MerfyIsland extends HTMLElement {
       // If hashes match, data is current — do nothing
       if (buildHash && buildHash !== "initial" && entry.hash === buildHash) return;
 
-      // Hash differs or initial — fetch fresh fragment from local cache
+      // Hash differs or initial — fetch fresh fragment (use hash for cache-busting)
       let html;
       try {
         const res = await fetch(
-          "/_islands/" + encodeURIComponent(component) + ".html",
+          "/_islands/" + encodeURIComponent(component) + ".html?v=" + (entry.hash || Date.now()),
         );
         if (!res.ok) return;
         html = await res.text();
