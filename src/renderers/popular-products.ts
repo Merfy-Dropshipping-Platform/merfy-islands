@@ -23,7 +23,7 @@ function renderProductCard(product: {
   const name = escapeHtml(product.name);
   const image =
     product.images?.[0] ? escapeHtml(product.images[0]) : "/images/placeholder.png";
-  const href = product.slug ? `/products/${escapeHtml(product.slug)}` : "#";
+  const href = product.slug ? `/product/${escapeHtml(product.slug)}` : "#";
   const outOfStock = isOutOfStock({
     quantity: product.quantity ?? 0,
     hasVariants: product.hasVariants ?? false,

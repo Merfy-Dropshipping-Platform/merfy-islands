@@ -49,7 +49,7 @@ export async function renderProductGrid(
           ? escapeHtml(product.images[0])
           : "/images/placeholder.png";
       const href = product.slug
-        ? `/products/${escapeHtml(product.slug)}`
+        ? `/product/${escapeHtml(product.slug)}`
         : "#";
       const outOfStock = isOutOfStock({
         quantity: product.quantity ?? 0,
